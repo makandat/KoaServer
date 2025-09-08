@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="style2.css" />
+  <script>
+    // 画像表を画面幅に合わせる。
+    function adjust_width() {
+      const img1 = document.getElementsByName('img1')
+      for (const el of img1)
+        el.classList.add('img-fluid')
+    }
+    var current_zoom = 1.0; // 現在の拡大率
+    // 画像の拡大・縮小
+    function zoom_image(zoom) {
+      const img1 = document.getElementsByName('img1')
+      if (zoom == 0) {
+        current_zoom = 1.0; // 等倍に戻す
+      } else if (zoom < 0) {
+        current_zoom = Math.max(0.1, current_zoom + zoom); // 最小0.1倍
+      } else {
+        current_zoom += zoom; // 拡大
+      }
+      for (const el of img1) {
+        el.style.transform = `scale(${current_zoom})`
+        el.style.transformOrigin = "0 0" // 左上を基準に拡大縮小
+      }
+    }
+
+    // 領域の文字列をクリップボードにコピー
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(function() {
+        alert('クリップボードにコピーしました: ' + text);
+      }, function(err) {
+        alert('クリップボードへのコピーに失敗しました: ', err);
+      });
+    }
+  </script>
+  <style>
+    h1 {
+      padding:6px;
+      text-align:center;
+      color:rgb(61, 160, 171);
+      background-color:white;
+    }
+    p.subtitle {
+      text-align: center;
+      font-size: 12pt;
+      color:royalblue;
+    }
+  </style>
+ </head>
+
+ <body style="background-color:aliceblue;">
+  <!-- Header -->
+  <header class="container">
+   <h1><%= title %></h1>
+   <p class="subtitle"><%= subtitle %></p>
+  </header>
+
+  <!--  スティッキーリンク -->
+  <div class="sticky-top text-end me-1 mt-2"><a href="#top">&#x1f53c;Top</a> / <a href="#bottom">&#x1f53d;Bottom</a></div>
+
+  <nav class="container mt-3 mb-3">
+    <a href="/showall/<%= id %>?order=asc">↓昇順</a>&nbsp;
+    <a href="/showall/<%= id %>?order=desc">↑降順</a>&nbsp;|&nbsp;
+    <a href="javascript:zoom_image(-0.2)">縮小</a>&nbsp;/&nbsp;
+    <a href="javascript:zoom_image(0.2)">拡大</a>&nbsp;/&nbsp;
+    <a href="javascript:zoom_image(0)">等倍</a>&nbsp;/&nbsp;
+    <a href="javascript:adjust_width()">画像をブラウザの幅に縮小</a>&nbsp;|&nbsp;
+    <a href="javascript:location.reload()">リロード</a>&nbsp;/&nbsp;
+    <a href="javascript:window.close()">この画面を閉じる</a>
+  </nav>
+
+  <!-- Main content -->
+  <article class="container-fluid">
+   <div class="row">
+    <% i = 1 %>
+    <% for (let img of images) { %>
+     <figure class="ms-2 text-center">
+      <img src="/image?path=<%= img %>" name="img1">
+      <% if (process.platform == 'win32') img = img.replaceAll('/', '\\')  %>
+      <figcaption style="color:indianred;text-align:center;">(<%= i %> / <%= images.length %>) <span id="<%= img %>" onclick="copyToClipboard('<%= img.replaceAll('\\', '\\\\') %>')"><%= img %></span></figcaption>
+     </figure>
+     <% i += 1 %>
+    <% } %>   </div>
+  </article>
+
+  <!-- Footer -->
+  <footer class="container">
+   <a id="bottom"></a>
+   <p class="text-center"><a href="#top">TOP</a> / <a href="javascript:window.close()">この画面を閉じる</a></p>
+   <p>&nbsp;</p>
+   <p>&nbsp;</p>
+  </footer>
+  </body>
+  </html>

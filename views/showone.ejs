@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>(<%= position + 1 %>) <%= title %></title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="style2.css" />
+  <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js"></script>
+  <style>
+        h1 {
+      padding:6px;
+      text-align:center;
+      color:rgb(61, 160, 171);
+      background-color:white;
+    }
+  </style>
+  <script>
+    // 画像の幅を画面に合わせる。
+    function adjust_width() {
+      const img1 = document.getElementById('img1')
+      if (img1.classList.contains('img-fluid')) {
+        // img-fluid が設定されている場合は削除
+        img1.classList.remove('img-fluid')
+        Cookies.set('adjust_width', 'none')
+      } else {
+        // img-fluid が設定されていない場合は追加
+        img1.classList.add('img-fluid')
+        Cookies.set('adjust_width', 'img-fluid')
+      }
+    }
+
+    // タイトルを消す・表示
+    function hide_title() {
+      const header = document.getElementById('header')
+      if (header.style.display == "") {
+        header.style.display = "none"
+        Cookies.set('title_visible', 'none')
+      } else {
+        header.style.display = ""
+        Cookies.set('title_visible', '')
+      }
+    }
+
+    // 画像がクリックされたとき
+    function image_click(event) {
+      const xPx = event.offsetX
+      const imageWidth = event.target.offsetWidth
+      const xPercent = ((xPx / imageWidth) * 100).toFixed(2)
+      if (xPercent < 30) {
+        location.href = "/showone?path=<%= path %>&move=prev"
+      }
+      else {
+        location.href = "/showone?path=<%= path %>&move=next"
+      }
+    }
+
+    function body_ready() {
+      // キーイベントハンドラ Shift+矢印キー
+      document.addEventListener("keydown",
+        event => {
+          if ((event.key === 'ArrowRight' || event.key === 'ArrowDown') && event.shiftKey) {
+           location.href = "/showone?path=<%= path %>&move=next"
+          }
+          else if ((event.key === 'ArrowLeft' || event.key == 'ArrowUp') && event.shiftKey) {
+            location.href = "/showone?path=<%= path %>&move=prev"
+          }
+          else {
+            // Not handle
+          }
+        }
+      )
+
+      // 表題の表示
+      const tv = Cookies.get("title_visible")
+      header.style.display = tv
+
+      // 画像の幅を画面に合わせる
+      const aw = Cookies.get("adjust_width")
+      if (aw === 'img-fluid') {
+        img1.classList.add('img-fluid')
+      }
+
+      // 画像の先頭へジャンプ
+      location.href = "#image_top"
+    }
+  
+    var current_zoom = 1.0; // 現在の拡大率
+
+    // 画像の拡大・縮小
+    function zoom_image(zoom) {
+      const img1 = document.getElementById('img1')
+      if (zoom == 0) {
+        current_zoom = 1.0; // 等倍に戻す
+      } else if (zoom < 0) {
+        current_zoom = Math.max(0.1, current_zoom + zoom); // 最小0.1倍
+      } else {
+        current_zoom += zoom; // 拡大
+      }
+      img1.style.transform = `scale(${current_zoom})`
+      img1.style.transformOrigin = "0 0"
+    }
+
+    // 領域の文字列をクリップボードにコピー
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(function() {
+        alert('クリップボードにコピーしました: ' + text);
+      }, function(err) {
+        alert('クリップボードへのコピーに失敗しました: ', err);
+      });
+    }
+
+  </script>
+ </head>
+
+ <body style="background-color:aliceblue;" onload="javascript:body_ready()">
+  <!-- Header -->
+  <header id="header" class="container">
+   <h1><%= title %></h1>
+    <h4 style="text-align: center; color:magenta;"><%= message %></h4>
+  </header>
+  
+  <!-- Menu -->
+  <nav class="container">
+   <a href="javascript:window.close()">ページを閉じる</a>&nbsp;/&nbsp;
+   <a href="javascript:location.reload()">リロード</a>&nbsp;/&nbsp;
+   <a href="/showone?path=<%= path %>&move=first">&lt;&lt;最初</a>&nbsp;
+   <a href="/showone?path=<%= path %>&move=prev">&lt;前</a>&nbsp;
+   <a href="/showone?path=<%= path %>&move=next">次&gt;</a>&nbsp;
+   <a href="/showone?path=<%= path %>&move=last">最後&gt;&gt;</a>&nbsp;|&nbsp;
+   <a href="javascript:hide_title()">表題OFF/ON</a>&nbsp;|&nbsp;
+   <a href="javascript:zoom_image(-0.2)">縮小</a>&nbsp;/&nbsp;
+   <a href="javascript:zoom_image(0.2)">拡大</a>&nbsp;/&nbsp;
+   <a href="javascript:zoom_image(0)">等倍</a>&nbsp;/&nbsp;
+   <a href="javascript:adjust_width()">画像を画面幅で表示</a>&nbsp;|&nbsp;
+   <span style="font-size:10pt;color:gray;">* Shift + 矢印キーで移動</span>
+  </nav>
+
+  <!-- Main content -->
+  <article class="container-fluid">
+   <figure class="p-2 d-flex flex-column justify-content-center align-items-center" style="min-height:60vh;">
+    <% if (position >= count) { %>
+      <figcaption class="d-block mx-auto mb-2" style="font-size:22pt;color:magenta;">最後の画像です。<a href="/showone?path=<%= path %>&move=first"><span style="font-size:16pt;text-decoration:underline">最初へ戻る</span></a></figcaption>
+    <% } else { %>
+      <% if (process.platform == 'win32') { path = path.replaceAll('/', '\\') } %>
+      <figcaption class="d-blick mx-auto mb-2" style="font-size:12pt;color:magenta;">(<%= position + 1 %> / <%= count %>) <span id="<%= path %>" onclick="javascript:copyToClipboard('<%= path.replaceAll('\\', '\\\\') %>')"><%= path %></span></figcaption>
+      <a id="image_top"></a>
+      <img id="img1" class="d-block mx-auto" style="text-align:center;" src="/image?path=<%= path %>" onclick="javascript:image_click(event)">
+    <% } %>
+   </figure>
+
+  </article>
+
+  <!-- Footer -->
+  <footer class="container">
+   <p class="text-center"><a href="#top">TOP</a></p>
+   <p>&nbsp;</p>
+   <p>&nbsp;</p>
+  </footer>
+  </body>
+  </html>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>作者一覧</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="style2.css" />
+  <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js"></script>
+  <style>
+    h1 {
+      padding:6px;
+      text-align:center;
+      color:rgb(61, 160, 171);
+      background-color:white;
+    }
+  </style>
+ </head>
+
+ <body>
+    <header>
+      <h1>作者一覧</h1>
+      <p class="text-center"><a href="javascript:window.close()">ページを閉じる</a></p>
+    </header>
+   <article class="container">
+     <ul>
+       <% creators.forEach(function(creator) { %>
+         <li><a href="/query_creator?creator=<%= encodeURIComponent(creator.creator) %>" target="_blank"><%= creator.creator %></a> (count=<%= creator.cnt %>, fav=<%= creator.max_fav %>)</li>
+       <% }); %>
+     </ul>
+   </article>
+ </body>
+</html>

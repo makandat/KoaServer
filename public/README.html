@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+  <title>README - Pictures by Koa.js</title>
+  <style>
+    h1 {
+      text-align: center;
+      color: dodgerblue;
+      font-size: 2em;
+      padding: 10px;
+      background-color: azure;
+      border-radius: 8px;
+      border: 2px solid lightgray;
+    }
+    h2 {
+      color: rgb(45, 45, 106);
+      border-bottom: 2px solid lightgray;
+      padding-bottom: 5px;
+      font-size:1.6em;
+    }
+    h3 {
+      color: rgb(118, 65, 131);
+      font-size:1.5em;
+    }
+  </style>
+</head>
+<body>
+  <header class="container mt-3 p-3">
+    <h1>README - Pictures by Koa.js</h1>
+  </header>
+
+  <article class="container">
+    <section class="row mt-3">
+      <h2>概要</h2>
+      <p>このアプリケーションは、Koa.jsを使用して構築されたシンプルな画像管理 Web アプリケーションです。</p>
+      <ul class="ms-4">
+        <li>画像フォルダごとの管理</li>
+        <li>フォルダ内の画像の一覧表示</li>
+        <li>フォルダ内の画像のサムネイル表示</li>
+        <li>画像の並べ替え</li>
+        <li>お気に入り機能</li>
+        <li>各種検索機能</li>
+        <li>作者一覧表示</li>
+        <li>フォルダ内の画像数と画像サイズの合計表示</li>
+      </ul>
+    </section>
+
+    <section class="row mt-3">
+      <h2>セットアップ手順</h2>
+      <ol class="ms-4">
+        <li>Node.js と npm をインストールします。</li>
+        <li>SQLite3 をインストールします。</li>
+        <li>このリポジトリをクローンします。</li>
+        <li>プロジェクトディレクトリに移動し、依存関係をインストールします。
+          <pre><code>npm install</code></pre>
+        </li>
+        <li>sqlite3 コマンドで pictures.db を作成します。その際、.read コマンドで Pixiv.js を読み込んでテーブルを作成します。</li>
+        <li>アプリケーションを起動します。
+          <pre><code>node app.js</code></pre>
+        </li>
+        <li>ブラウザで http://localhost:3030 にアクセスします。</li>
+      </ol>
+    </section>
+
+    <section class="row mt-3 mb-5">
+      <h2>画像フォルダの登録</h2>
+      <p>ブラウザでメインページを開いたら「項目の追加」メニューを実行して画像フォルダを登録します。以下の登録項目を入力して「追加する」ボタンをクリックします。</p>
+      <ul class="ms-4">
+        <li>タイトル (title)</li>
+        <li>作者 (creator)</li>
+        <li>そのフォルダのパス名 (path)</li>
+        <li>お気に入り機能（fav カラムを使用）</li>
+        <li>メディア (media) : フォルダを含むドライブの名称</li>
+        <li>識別用マーク (mark) : グループ名、カテゴリー名、タグ名など。ユーザが任意につけることができる。空欄でもよい。</li>
+        <li>お気に入り (fav) : お気に入りレベル (0, 1, 2, ...)。マイナスも指定可能でその項目を削除するのに使用する。デフォルトは 0。</li>
+        <li>情報 (info) : ユーザが自由に使える情報で検索に使用できる。空欄でもよい。</li>
+      </ul>
+    </section>
+
+    <section class="row mt-3 mb-5">
+      <h2>メインメニュー</h2>
+      <ul class="ms-4">
+        <li>リセット : '/' を開く。</li>
+        <li>リロード : window.reload() を実行する。</li>
+        <li>項目の追加 : 「項目の追加」フォームを開く。上述の「画像フォルダ」の登録に使用する。</li>
+        <li>リフレッシュ : フォルダの画像数とトータルサイズを一括して取得する。このメニューは実行に時間がかかるので注意。pixviv_ex テーブルが更新される。</li>
+        <li>お気に入り : fav > 0 の項目だけを fav の降順で表示する。</li>
+        <li>mark ドロップボタン : mark による一覧を表示するのに使用する。</li>
+        <li>filter ボタン : テキストボックスに入力したワードで title, path, info を検索する。</li>
+        <li>作者一覧 : 作者一覧ページを開く。</li>
+        <li>昇順で表示 : 現在表示されている一覧を id 順で表示する。</li>
+        <li>降順で表示 : 現在表示されている一覧を id の逆順で表示する。</li>
+        <li>タイトルでソート : 現在表示されている一覧をタイトル順で表示する。</li>
+        <li>fav &lt; 0 の項目を削除 : データベースからそれらの項目を削除する。</li>
+        <li>README : このウィンドウを表示する。</li>
+      </ul>
+      <p>一覧表示内のリンクは次のような機能があります。</p>
+      <ul class="ms-4">
+        <li>id : その id に対応する項目を修正するためのフォームを開く。</li>
+        <li>title : その id に対応するフォルダ内の画像を一覧表示する。</li>
+        <li>creator : その id に対応する作者のすべてのフォルダを一覧表示する。</li>
+        <li>path : その id に対応するフォルダに含まれる画像一覧をサムネイル表示する。</li>
+      </ul>
+    </section>
+
+    <section class="row mt-3 mb-5">
+      <h2>データベース</h2>
+      <ul class="ms-4">
+        <li>データベースは ./pictures.db (SQLite3) である。</li>
+        <li>pixiv テーブル : メインテーブル</li>
+        <li>pixiv_ex テーブル : 拡張情報用テーブルでフォルダ内の画像ファイル数とトータルサイズを保持する。</li>
+        <li>vw_pictures ビュー : pixiv, pixiv_ex を結合したビュー。</li>
+      </ul>
+      <h3>pixiv</h3>
+      <pre>CREATE TABLE pixiv (
+   id integer primary key autoincrement,
+   title text not null,
+   creator text not null,
+   path text not null unique,
+   media text,
+   mark text,
+   fav int default 0,
+   count default 0,
+   info text,
+   date date
+);</pre>
+
+        <h3>pixiv_ex</h3>
+        <pre>CREATE TABLE pixiv_ex (
+  id integer not null unique,
+  file_count integer,
+  total_size number
+);</pre>
+
+      <h3>vw_pictures</h3>
+      <pre>CREATE VIEW vw_pictures AS
+  SELECT
+    a.id,
+    a.title,
+    a.creator,
+    a.path,
+    a.media,
+    a.mark,
+    a.fav,
+    a.count,
+    a.info,
+    a.date,
+    b.file_count,
+    b.total_size 
+FROM pixiv a 
+INNER JOIN pixiv_ex b
+WHERE a.id = b.id;</pre>
+    </section>
+
+    <section class="row mt-3 mb-5">
+      <h2>package.json</h2>
+      <p>name, version はユーザが変更可能。</p>
+      <pre>{
+  "name": "Pictures by Koa.js",
+  "version": "1.0.15",
+  "type": "module",
+  "description": "",
+  "main": "index.js",
+  "start": "node index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "accesslog": false,
+  "license": "ISC",
+  "dependencies": {
+    "@koa/router": "^14.0.0",
+    "better-sqlite3": "^12.2.0",
+    "ejs": "^3.1.10",
+    "koa": "^3.0.1",
+    "koa-bodyparser": "^4.4.1",
+    "koa-router": "^14.0.0",
+    "koa-static": "^5.0.0",
+    "koa-views": "^8.1.0"
+  }
+}</pre>
+  </article>
+</body>
+</html>
