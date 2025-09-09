@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title %></title>
+  <style>
+    h1 {
+      text-align: center;
+      color: crimson;
+      padding: 10px;
+    }
+  </style>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+  <script>
+    function applyFilter() {
+      const filter = document.getElementById("filter").value;
+      location.href = `/query_filter?filter=${filter}`;
+    }
+
+    function confirm_delete() {
+      if (confirm('fav < 0 の項目を削除します。よろしいですか？')) {
+        location.href = '/delete_by_fav';
+      }
+      else {
+        const message = document.getElementById("message");
+        message.textContent = "削除がキャンセルされました。";
+      }
+    }
+
+    function refresh_ex() {
+      const message = document.getElementById("message");
+      if (confirm('全ての項目を再スキャンします (時間がかかることがあります)。よろしいですか？')) {
+        message.textContent = "リフレッシュ中です。しばらくお待ちください...";
+        location.href = '/refresh_ex';
+      }
+      else {
+        message.textContent = "リフレッシュがキャンセルされました。";
+      }
+    }
+  </script>
+</head>
+
+<body>
+
+  <header class="container mt-3 p-3 bg-light border-rounded">
+    <h1 class="text-center">&#x1f5bc; <%= title %></h1>
+  </header>
+
+  <!--  スティッキーリンク -->
+  <div class="sticky-top text-end me-1 mt-2"><a href="#top">&#x1f53c;Top</a> / <a href="#bottom">&#x1f53d;Bottom</a></div>
+
+  <nav class="container-fluid mt-3 ms-5 me-5">
+    <ul class="nav">
+      <li class="nav-item">
+        <a class="nav-link active" aria-current="page" href="/">&#x23cf;リセット</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="javascript:location.reload()">&#x1f504;リロード</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/additem" target="_blank">&#x1f7e7;項目の追加</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="javascript:refresh_ex()">&#x1f505;リフレッシュ</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/favorites">&#x1fa77;お気に入り</a>
+      </li>
+      <li class="nav-item">
+        <div class="dropdown">
+           <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            mark
+           </button>
+        <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+         <% for (let m of marks) { %>
+          <a class="dropdown-item" href="/query_mark?mark=<%= m %>"><%= m %></a>
+         <% } %>
+        </ul>
+        </div>
+      </li>
+      <li>
+        <input type="text" id="filter" name="filter" size="20" class="form-control ms-2">
+        <button class="btn btn-primary ms-2" style="height:30px;padding-top: 0.1rem;" id="filterBtn" onclick="applyFilter()">&nbsp;Filter&nbsp;</button>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/creators" target="_blank">&#x1f9d1;作者一覧</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/?order=asc">&#x2b07;昇順で表示</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/?order=desc">&#x2b06;降順で表示</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/?order=title">&#x2194;タイトルでソート</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="javascript:confirm_delete()">&#x2757;fav &lt; 0 の項目を削除</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/README.html" target="_blank">&#x1f4d6;README</a>
+    </ul>
+  </nav>
+
+  <article class="container">
+    <p id="message" style="color:magenta;font-size:12pt;padding:5px;text-align:center;"><%= message %></p>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>id</th>
+          <th>title</th>
+          <th>creator</th>
+          <th>path</th>
+          <th>media</th>
+          <th>mark</th>
+          <th>fav</th>
+          <th>count</th>
+          <th>info</th>
+          <th>file_count</th>
+          <th>total size (MB)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% for (const item of data) { %>
+        <tr>
+          <td><a href="/updateitem/<%= item.id %>" target="_blank"><%= item.id %></a></td>
+          <td><a href="/showall/<%= item.id %>" target="_blank"><%= item.title %></a></td>
+          <td><a href="/query_creator?creator=<%= item.creator %>"><%= item.creator %></a></td>
+          <td><a href="/thumbs/<%= item.id %>" target="_blank"><%= item.path %></a></td>
+          <td><%= item.media %></td>
+          <td><%= item.mark %></td>
+          <td><%= item.fav %></td>
+          <td><%= item.count %></td>
+          <td><%= item.info %></td>
+          <td><%= item.file_count %></td>
+          <td><%= item.total_size %></td>
+        </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </article>
+
+  <footer class="mt-4 mb-5">
+    <a id="bottom"></a>
+    <p class="text-center mt-5">Powered by Koa & EJS <a href="#top">&#x1f53c;TOP</a></p>
+  </footer>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+</html>

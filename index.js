@@ -325,7 +325,8 @@ router.get('/showone', async (ctx) => {
 router.get('/query_creator', async (ctx) => {
   const creator = ctx.query.creator;
   const data = await pixiv.query_by_creator(creator, true);
-  const marks = await pixiv.list_marks();
+  let marks = await pixiv.list_marks()
+  marks = marks.map(mark => mark.mark)
   const title = `Pictures - ${creator}`;
   await ctx.render('index', {
     title: title,
@@ -339,7 +340,8 @@ router.get('/query_creator', async (ctx) => {
 router.get('/query_mark', async (ctx) => {
   const mark = ctx.query.mark;
   const data = await pixiv.query_by_mark(mark, true);
-  const marks = await pixiv.list_marks();
+  let marks = await pixiv.list_marks()
+  marks = marks.map(mark => mark.mark)
   const title = `Pictures - ${mark}`;
   await ctx.render('index', {
     title: title,
@@ -353,7 +355,8 @@ router.get('/query_mark', async (ctx) => {
 router.get('/query_filter', async (ctx) => {
   const filter = ctx.query.filter;
   const data = await pixiv.query_filter(filter, true);
-  const marks = await pixiv.list_marks();
+  let marks = await pixiv.list_marks()
+  marks = marks.map(mark => mark.mark)
   const title = `Pictures - ${filter}`;
   await ctx.render('index', {
     title: title,
@@ -366,7 +369,8 @@ router.get('/query_filter', async (ctx) => {
 // お気に入り
 router.get('/favorites', async (ctx) => {
   const data = await pixiv.query_by_fav(true);
-  const marks = await pixiv.list_marks();
+  let marks = await pixiv.list_marks()
+  marks = marks.map(mark => mark.mark)
   const title = `Pictures - お気に入り`;
   await ctx.render('index', {
     title: title,
