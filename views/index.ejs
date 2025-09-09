@@ -30,7 +30,7 @@
 
     function refresh_ex() {
       const message = document.getElementById("message");
-      if (confirm('全ての項目を再スキャンします。よろしいですか？')) {
+      if (confirm('全ての項目を再スキャンします (時間がかかることがあります)。よろしいですか？')) {
         message.textContent = "リフレッシュ中です。しばらくお待ちください...";
         location.href = '/refresh_ex';
       }
@@ -62,7 +62,7 @@
         <a class="nav-link" href="/additem" target="_blank">&#x1f7e7;項目の追加</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="/refresh_ex">&#x1f505;リフレッシュ</a>
+        <a class="nav-link" href="javascript:refresh_ex()">&#x1f505;リフレッシュ</a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="/favorites">&#x1fa77;お気に入り</a>
