@@ -157,10 +157,10 @@ WHERE a.id = b.id;</pre>
 
     <section class="row mt-3 mb-5">
       <h2>package.json</h2>
-      <p>name, version はユーザが変更可能。</p>
+      <p>name, version, accesslog はユーザが変更可能。accesslog はコンソールにログを表示する。</p>
       <pre>{
   "name": "Pictures by Koa.js",
-  "version": "1.0.15",
+  "version": "1.2.1",
   "type": "module",
   "description": "",
   "main": "index.js",
@@ -179,6 +179,7 @@ WHERE a.id = b.id;</pre>
     "ejs": "^3.1.10",
     "koa": "^3.0.1",
     "koa-bodyparser": "^4.4.1",
+    "koa-session": "^7.0.2",    
     "koa-router": "^14.0.0",
     "koa-static": "^5.0.0",
     "koa-views": "^8.1.0"
