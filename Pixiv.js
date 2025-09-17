@@ -1,5 +1,5 @@
 /* pictures.db pixiv テーブルの操作用クラス */
-/*   class Pixiv v1.0.0 */
+/*   class Pixiv v1.2.0 */
 'use strict'
 import Database from 'better-sqlite3' // https://www.npmjs.com/package/better-sqlite3
 import { existsSync, rmSync, statSync } from 'node:fs';
@@ -20,23 +20,24 @@ export default class Pixiv {
   }
 
   // pixiv または vw_pictures に対して SQL クエリを実行する。条件は filter で指定する。
-  async query_filter(filter, ex=false) {
+  async query_filter(filter, orderby='asc', ex=false) {
     let table = 'pixiv'
     if (ex) {
       table = 'vw_pictures'
     }
-    const sql = `SELECT * FROM ${table} WHERE instr(title, ?) OR instr(path, ?) OR instr(info, ?)`
-    return this.db.prepare(sql).all([filter, filter, filter])
+    const sql = `SELECT * FROM ${table} WHERE instr(LOWER(title), ?) OR instr(path, ?) OR instr(LOWER(info), ?) ORDER BY id ${orderby.toUpperCase()}`
+    const filter_lc = filter.toLowerCase()
+    return this.db.prepare(sql).all([filter_lc, filter_lc, filter_lc])
   }
   
   // pixiv または vw_pictures に対して SQL クエリを実行する。条件は mark で指定する。
-  async query_by_mark(mark, ex=false) {
+  async query_by_mark(mark, orderby='asc', ex=false) {
     let table = 'pixiv'
     if (ex) {
       table = 'vw_pictures'
     }
-    const sql = `SELECT * FROM ${table} WHERE mark = ?`
-    return this.db.prepare(sql).all([mark])
+    const sql = `SELECT * FROM ${table} WHERE LOWER(mark) = ? ORDER BY id ${orderby.toUpperCase()}`
+    return this.db.prepare(sql).all([mark.toLowerCase()])
   }
 
   // fav の降順で pixiv または vw_pictures に対して SQL クエリを実行する。

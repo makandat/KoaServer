@@ -7,6 +7,7 @@ const DBPATH = './pictures.db'
 import Koa from 'koa'
 import fs from 'fs'
 import path from 'path'
+import session from 'koa-session' // router より前に import すること
 import Router from '@koa/router'
 import bodyParser from 'koa-bodyparser'
 import serve from 'koa-static'
@@ -21,6 +22,9 @@ const app = new Koa()
 const router = new Router()
 // データベース接続の初期化
 const pixiv = new Pixiv(DBPATH)
+// セッション
+app.keys = ['makandat-koa-session-order-by-secret-key'];
+app.use(session(app));
 
 // package,json を読む。
 function reafPackageJson() {
@@ -108,15 +112,21 @@ router.get('/', async (ctx) => {
   const conf = reafPackageJson()
   const title = conf.name + " " + conf.version;
   const message = '';
+  ctx.session.orderby = ctx.session.orderby || 'asc'
   let sql = "SELECT * FROM vw_pictures ORDER BY id"
   switch (ctx.query.order) {
     case 'desc':
       sql += " DESC"
+      ctx.session.orderby = 'desc'
       break;
     case 'title':
       sql = "SELECT * FROM vw_pictures ORDER BY title"
       break;
     default:
+      if (ctx.session.orderby === 'asc')
+        sql += " ASC"
+      else
+        sql += " DESC"
       break
   }
   const data = await pixiv.query(sql)
@@ -339,7 +349,8 @@ router.get('/query_creator', async (ctx) => {
 // マークによるクエリ
 router.get('/query_mark', async (ctx) => {
   const mark = ctx.query.mark;
-  const data = await pixiv.query_by_mark(mark, true);
+  const orderby = ctx.query.orderby || 'asc';
+  const data = await pixiv.query_by_mark(mark, orderby, true);
   let marks = await pixiv.list_marks()
   marks = marks.map(mark => mark.mark)
   const title = `Pictures - ${mark}`;
@@ -354,7 +365,8 @@ router.get('/query_mark', async (ctx) => {
 // フィルタによるクエリ
 router.get('/query_filter', async (ctx) => {
   const filter = ctx.query.filter;
-  const data = await pixiv.query_filter(filter, true);
+  const orderby = ctx.query.orderby || 'asc';
+  const data = await pixiv.query_filter(filter, orderby, true);
   let marks = await pixiv.list_marks()
   marks = marks.map(mark => mark.mark)
   const title = `Pictures - ${filter}`;
