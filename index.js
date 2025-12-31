@@ -1,5 +1,9 @@
 /* index.js : pictures.db を使った画像フォルダ管理 */
-/*   Version 1.0.6 */
+/*   Version 1.3.0 
+  1 セッション mark, filter の追加
+  2 vw_pictures が pixiv_ex テーブルの内容が pictures テーブルと一致しないとき、すべての項目が含まれないのを修正
+  3 画像表示の位置表示がずれているのを修正
+*/
 const PORT = 3030
 const DBPATH = './pictures.db'
 
@@ -109,10 +113,15 @@ app.use(bodyParser())
 
 // ルートパス ('/') への GET リクエスト
 router.get('/', async (ctx) => {
+  let message = '';
+  if (pixiv.check_ex_count() == false) {
+    message = 'pictures と pictures_ex テーブルの整合性が取れていません。「リフレッシュ」を実行してください。'
+  }
   const conf = reafPackageJson()
   const title = conf.name + " " + conf.version;
-  const message = '';
   ctx.session.orderby = ctx.session.orderby || 'asc'
+  ctx.session.mark = ''
+  ctx.session.filter = ''
   let sql = "SELECT * FROM vw_pictures ORDER BY id"
   switch (ctx.query.order) {
     case 'desc':
@@ -146,11 +155,14 @@ router.get('/', async (ctx) => {
 router.get('/refresh_ex', async (ctx) => {
   const conf = reafPackageJson()
   const title = conf.name + " " + conf.version
+  let refresh_id = 0
+  if (conf.refresh_id != undefined)
+    refresh_id = conf.refresh_id
   let marks = await pixiv.list_marks()
   marks = marks.map(mark => mark.mark)
   try {
     await pixiv.refresh_pixiv_ex()
-    const sql = "SELECT * FROM vw_pictures ORDER BY id"
+    const sql = `SELECT * FROM vw_pictures WHERE id >= ${refresh_id} ORDER BY id`
     const data = await pixiv.query(sql)
     await ctx.render('index', {
       title:title,
@@ -295,7 +307,6 @@ router.get('/showone', async (ctx) => {
   let imagePath = ctx.query.path;
   const dir = path.dirname(imagePath)
   const count = await get_file_count(dir)
-  const position = await get_file_position(dir, imagePath)
   const move = ctx.query.move || ''
   if (!imagePath || !fs.existsSync(imagePath)) {
     await ctx.render('errorpage', { message: '画像が見つかりません' });
@@ -326,6 +337,7 @@ router.get('/showone', async (ctx) => {
     default:
       break
   }
+  const position = await get_file_position(dir, imagePath)
   const row = await pixiv.get_path(dir);
   const title = row.title
   await ctx.render('showone', { title: title, message: message, count: count, path: imagePath, position: position });
@@ -350,6 +362,7 @@ router.get('/query_creator', async (ctx) => {
 router.get('/query_mark', async (ctx) => {
   const mark = ctx.query.mark;
   const orderby = ctx.query.orderby || 'asc';
+  ctx.session.mark = mark
   const data = await pixiv.query_by_mark(mark, orderby, true);
   let marks = await pixiv.list_marks()
   marks = marks.map(mark => mark.mark)
@@ -363,10 +376,11 @@ router.get('/query_mark', async (ctx) => {
 })
 
 // フィルタによるクエリ
-router.get('/query_filter', async (ctx) => {
+router.get('/query_by_filter', async (ctx) => {
   const filter = ctx.query.filter;
   const orderby = ctx.query.orderby || 'asc';
-  const data = await pixiv.query_filter(filter, orderby, true);
+  ctx.session.filter = filter
+  const data = await pixiv.query_by_filter(filter, orderby, true);
   let marks = await pixiv.list_marks()
   marks = marks.map(mark => mark.mark)
   const title = `Pictures - ${filter}`;
@@ -396,7 +410,39 @@ router.get('/favorites', async (ctx) => {
 router.get("/creators", async (ctx) => {
   const creators = await pixiv.list_creators();
   await ctx.render('creators', { creators: creators });
-});
+})
+
+// 昇順と降順の設定
+router.get('/orderby/:kind', async ctx => {
+  const conf = reafPackageJson()
+  const title = conf.name + " " + conf.version;
+  const kind = ctx.request.params.kind
+  let message = '降順で表示'
+  if (kind == 'asc') {
+    message = '昇順で表示'
+  }
+  const mark = ctx.session.mark
+  const filter = ctx.session.filter
+  let sql = 'SELECT * FROM vw_pictures ORDER BY id ' + kind
+  let data = []
+  if (mark != '') {
+    data = await pixiv.query_by_mark(mark, kind, true)
+  }
+  else if (filter != '') {
+    data = await pixiv.query_by_filter(filter, kind, true)
+  }
+  else {
+    data = await pixiv.query(sql)
+  }
+  let marks = await pixiv.list_marks()
+  marks = marks.map(mark => mark.mark)
+  await ctx.render('index', {
+    title: title,
+    message: message,
+    data: data,
+    marks: marks
+  });
+})
 
 // fav < 0 の項目を削除
 router.get('/delete_by_fav', async (ctx) => {

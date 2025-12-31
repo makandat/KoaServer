@@ -20,7 +20,7 @@ export default class Pixiv {
   }
 
   // pixiv または vw_pictures に対して SQL クエリを実行する。条件は filter で指定する。
-  async query_filter(filter, orderby='asc', ex=false) {
+  async query_by_filter(filter, orderby='asc', ex=false) {
     let table = 'pixiv'
     if (ex) {
       table = 'vw_pictures'
@@ -29,7 +29,7 @@ export default class Pixiv {
     const filter_lc = filter.toLowerCase()
     return this.db.prepare(sql).all([filter_lc, filter_lc, filter_lc])
   }
-  
+
   // pixiv または vw_pictures に対して SQL クエリを実行する。条件は mark で指定する。
   async query_by_mark(mark, orderby='asc', ex=false) {
     let table = 'pixiv'
@@ -37,6 +37,9 @@ export default class Pixiv {
       table = 'vw_pictures'
     }
     const sql = `SELECT * FROM ${table} WHERE LOWER(mark) = ? ORDER BY id ${orderby.toUpperCase()}`
+    if (mark == undefined) {
+      mark = ''
+    }
     return this.db.prepare(sql).all([mark.toLowerCase()])
   }
 
@@ -80,7 +83,7 @@ export default class Pixiv {
     const sql = `SELECT * FROM ${table} WHERE id = ?`
     return this.db.prepare(sql).get([id])
   }
-  
+
   // id の最大値を得る。
   async get_maxid() {
     const sql = 'SELECT max(id) AS max_id FROM pixiv';
@@ -170,7 +173,7 @@ export default class Pixiv {
     const rows = await this.db.prepare(sql).all();
     return rows
   }
-  
+
   // 作者一覧を取得する。
   // レコード数と最大 fav を含む。
   async list_creators() {
@@ -179,7 +182,7 @@ export default class Pixiv {
     return rows
   }
 
-  // private メソッド: files のトータルサイズを MB で得る。 
+  // private メソッド: files のトータルサイズを MB で得る。
   async #get_total_size(files) {
     let totalSize = 0
     for (const f of files) {
@@ -206,7 +209,7 @@ export default class Pixiv {
       await this.db.prepare('INSERT INTO pixiv_ex VALUES(?, ?, ?)').run([id, fileCount, totalSize])
     }
     else {
-      await this.db.prepare('UPDATE pixiv_ex SET file_count=?, total_size=? WHERE id = ?').run([fileCount, totalSize, id])      
+      await this.db.prepare('UPDATE pixiv_ex SET file_count=?, total_size=? WHERE id = ?').run([fileCount, totalSize, id])
     }
   }
 
@@ -257,7 +260,14 @@ export default class Pixiv {
         await this.delete(row.id)
       }
     }
-    return id    
+    return id
+  }
+
+  // pixiv と pixiv_ex のレコード数が一致するかチェックする。
+  async check_ex_count() {
+    const count1 = await this.db.prepare('SELECT COUNT(id) AS cnt FROM pixiv')
+    const count2 = await this.db.prepare('SELECT COUNT(id) AS cnt FROM pixiv_ex')
+    return (count1 == count2)
   }
 
   // id で指定したデータの path (folder) に含まれる画像ファイル一覧を返す。
@@ -299,7 +309,7 @@ export default class Pixiv {
   }
 }
 
-// private メソッド: files のトータルサイズを MB で得る。 
+// private メソッド: files のトータルサイズを MB で得る。
 function get_total_size(files) {
   let totalSize = 0
   for (const f of files) {

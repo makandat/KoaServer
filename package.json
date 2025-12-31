@@ -1,6 +1,6 @@
 {
-  "name": "Pictures by Koa.js",
-  "version": "1.2.2",
+  "name": "Pictures By Koa.js",
+  "version": "1.3.2",
   "type": "module",
   "description": "",
   "main": "index.js",
@@ -10,8 +10,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
+  "author": "makandat",
   "accesslog": false,
+  "refresh_id": 175,
   "license": "ISC",
   "dependencies": {
     "@koa/router": "^14.0.0",
