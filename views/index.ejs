@@ -15,7 +15,7 @@
   <script>
     function applyFilter() {
       const filter = document.getElementById("filter").value;
-      location.href = `/query_filter?filter=${filter}`;
+      location.href = `/query_by_filter?filter=${filter}`;
     }
 
     function confirm_delete() {
@@ -30,7 +30,7 @@
 
     function refresh_ex() {
       const message = document.getElementById("message");
-      if (confirm('全ての項目を再スキャンします (時間がかかることがあります)。よろしいですか？')) {
+      if (confirm('項目を再スキャンします (時間がかかることがあります)。よろしいですか？')) {
         message.textContent = "リフレッシュ中です。しばらくお待ちください...";
         location.href = '/refresh_ex';
       }
@@ -87,10 +87,10 @@
         <a class="nav-link" href="/creators" target="_blank">&#x1f9d1;作者一覧</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="/?order=asc">&#x2b07;昇順で表示</a>
+        <a class="nav-link" href="/orderby/asc">&#x2b07;昇順で表示</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="/?order=desc">&#x2b06;降順で表示</a>
+        <a class="nav-link" href="/orderby/desc">&#x2b06;降順で表示</a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="/?order=title">&#x2194;タイトルでソート</a>
